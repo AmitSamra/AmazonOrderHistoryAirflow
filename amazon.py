@@ -53,7 +53,25 @@ def etl_csv(
 	df.Condition.fillna('unknown', inplace = True)
 	df.Carrier.fillna('unknown', inplace = True) 
 
+	# Remove $ and , from price columns.
+	df['ListPricePerUnit'] = df['ListPricePerUnit'].str.replace('$','').str.replace(',','')
+	df['PurchasePricePerUnit'] = df['PurchasePricePerUnit'].str.replace('$','').str.replace(',','')
+	df['ItemSubtotal'] = df['ItemSubtotal'].str.replace('$','').str.replace(',','')
+	df['Tax'] = df['Tax'].str.replace('$','').str.replace(',','')
+	df['ItemTotal'] = df['ItemTotal'].str.replace('$','').str.replace(',','')
 
+	# Convert price columns to float.
+	df['ListPricePerUnit'] = df['ListPricePerUnit'].astype(float)
+	df['PurchasePricePerUnit'] = df['PurchasePricePerUnit'].astype(float)
+	df['ItemSubtotal'] = df['ItemSubtotal'].astype(float)
+	df['Tax'] = df['Tax'].astype(float)
+	df['ItemTotal'] = df['ItemTotal'].astype(float)
+
+	# Drop rows with zero prices.
+	df = df[df.ListPricePerUnit != 0]
+	df = df[df.PurchasePricePerUnit != 0]
+	df = df[df.ItemSubtotal != 0]
+	df = df[df.ItemTotal != 0]
 
 	)
 

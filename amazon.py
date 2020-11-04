@@ -73,5 +73,17 @@ def etl_csv(
 	df = df[df.ItemSubtotal != 0]
 	df = df[df.ItemTotal != 0]
 
+	# Extract year, month, & day and store them in columns in df_main
+	df['OrderYear'] = df['OrderDate'].dt.year
+	df['OrderMonth'] = df['OrderDate'].dt.month
+	df['OrderDay'] = df['OrderDate'].dt.day
+	df['OrderDayIndex'] = df['OrderDate'].dt.dayofweek
+	df['OrderDayName'] = df['OrderDate'].dt.day_name()
+
+	#df_main = df_main.drop(df_main[df_main['OrderYear'] == 2020].index)
+	df = df.drop(df[df['OrderDate'].dt.year == 2020].index)
+
+	
+
 	)
 

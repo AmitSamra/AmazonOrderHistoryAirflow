@@ -1,10 +1,12 @@
 import airflow
 from airflow import DAG
-from airflow.operators.bash_operator import Bash_Operator 
-from airflow.operators.python_operator import PythonOperator 
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
 from datetime import timedelta, datetime
 import os
 import csv
+import sqlalchemy
+from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 import numpy as np 
 import pandas as pd
@@ -16,7 +18,7 @@ load_dotenv(dotenv_path=dotenv_local_path, verbose=True)
 
 
 default_args = {
-	'owner':'amit'
+	'owner':'amit',
 	#'start_date': datetime(2020,11,4,0),
 	'start_date': datetime.now(),
 	'retries': 0,
@@ -33,7 +35,7 @@ dag = DAG(
 	)
 
 
-def etl_csv(
+def etl_csv():
 
 	# Read csv
 	df = pd.read_csv(os.path.abspath('amazon_purchases.csv'), parse_dates=['Order Date', 'Shipment Date'])
@@ -103,21 +105,17 @@ def etl_csv(
 	df
 
 	# Connect to sql using sqlalchemy
-	import sqlalchemy
-	from sqlalchemy import create_engine
 	engine = create_engine('mysql+pymysql://' + os.environ.get("MYSQL_USER") + ":" + os.environ.get("MYSQL_PASSWORD") + '@localhost:3306/amazon')
 
 	# Export df to sql using df.to_sql
-
 	df.to_sql('purchases_airflow', con=engine, if_exists = 'replace', index=False)
-
-
-	)
+	
 
 t1 = PythonOperator(
 	task_id = 'etl_amazon_purchases.csv',
 	python_callable = etl_csv,
-	provide_context = false,
+	provide_context = False,
 	dag = dag
 	)
 
+t1

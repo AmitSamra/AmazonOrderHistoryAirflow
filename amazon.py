@@ -105,35 +105,19 @@ def etl_csv(
 	# Connect to sql using sqlalchemy
 	import sqlalchemy
 	from sqlalchemy import create_engine
-	engine = create_engine('mysql+pymysql://' + os.environ.get("MYSQL_USER") + ":" + os.environ.get("MYSQL_PASSWORD") + '@localhost:3306/amazon_')
+	engine = create_engine('mysql+pymysql://' + os.environ.get("MYSQL_USER") + ":" + os.environ.get("MYSQL_PASSWORD") + '@localhost:3306/amazon')
 
-	# Create table
-	engine.execute('DROP TABLE IF EXISTS purchases_airflow;')
+	# Export df to sql using df.to_sql
 
-	engine.execute("""CREATE TABLE IF NOT EXISTS purchases_airflow (
-	OrderID int not null primary key,
-	OrderDate date,
-	Category varchar(50),
-	`Condition` varchar(50),
-	Seller varchar(50),
-	ListPricePerUnit numeric(10,2),
-	PurchasePricePerUnit numeric(10,2),
-	Quantity int,
-	ShipDate date,
-	Carrier varchar(50),
-	ItemSubtotal numeric(10,2),
-	Tax numeric(10,2),
-	ItemTotal numeric(10,2),
-	OrderYear int,
-	OrderMonth int,
-	OrderDay int,
-	OrderDayIndex int,
-	OrderDayName varchar(50));""")
-
-	# 
+	df.to_sql('purchases_airflow', con=engine, if_exists = 'replace', index=False)
 
 
+	)
 
-
+t1 = PythonOperator(
+	task_id = 'etl_amazon_purchases.csv',
+	python_callable = etl_csv,
+	provide_context = false,
+	dag = dag
 	)
 

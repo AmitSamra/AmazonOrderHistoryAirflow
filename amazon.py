@@ -83,7 +83,25 @@ def etl_csv(
 	#df_main = df_main.drop(df_main[df_main['OrderYear'] == 2020].index)
 	df = df.drop(df[df['OrderDate'].dt.year == 2020].index)
 
-	
+	# Combine carriers to eliminate repitition
+	df['Carrier'] = df['Carrier'].replace('FEDEX', 'FedEx')
+	df['Carrier'] = df['Carrier'].replace('SMARTPOST', 'FedEx SmartPost')
+	df['Carrier'] = df['Carrier'].replace('Mail Innovations','UPS Mail Innovations')
+	df['Carrier'] = df['Carrier'].replace('UPS MI','UPS Mail Innovations')
+	df['Carrier'] = df['Carrier'].replace('US Postal Service','USPS')
+	df['Carrier'] = df['Carrier'].replace('DHL Global Mail','DHL')
+	df['Carrier'] = df['Carrier'].replace('US Postal Service','USPS')
+	df['Carrier'] = df['Carrier'].replace('AMZN_US', 'AMZN')
+	mail = ['USPS', 'UPS', 'UPS Mail Innovations', 'FedEx', 'FedEx SmartPost', 'DHL', 'AMZN']
+	df.loc[~df.Carrier.isin(mail), 'Carrier'] = 'Other'
+
+	# Reduce Sellers
+	df.loc[~df.Seller.isin(['Amazon.com']), 'Seller'] = 'ThirdParty'
+	df.loc[df.Seller.isin(['Amazon.com']), 'Seller'] = 'Amazon'
+
+	# Final dataframe
+	df
+
 
 	)
 

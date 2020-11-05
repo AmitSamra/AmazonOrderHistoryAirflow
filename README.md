@@ -1,10 +1,10 @@
 ![amazon_logo](img/amazon_logo.png)
 
-Amazon.com is the largest online retailer in the world. One of the best things about Amazon is the ability to download order reports in CSV format. In this project, I provide insight into my Amazon order history spanning 2008 to 2019, inclusive. I use python, pandas, matplotlib and SQLAlchemy to clean, analyze and persist data.
+One of the best things about Amazon is the ability to download personal order reports in CSV format. In this project, I provide insight into my Amazon order history spanning 2008 to 2019, inclusive. I use python, pandas, matplotlib and SQLAlchemy to clean, analyze and persist data. The ETL process is automated using Airflow. 
 
 ![python_logo](img/python_logo.png)![pandas_logo](img/pandas_logo.png)![matplotlib_logo](img/matplotlib_logo.png)![sqlalchemy_logo](img/sqlalchemy_logo.png)![sqlalchemy_logo](img/airflow_logo.png)
 
-This repository includes a [JupyterNotebook](AmazonOrderHistoryAirflow.ipynb), which contains all of the code used to generate the following report. 
+This repository includes an [Airflow dag](amazon.py) that contains ETL code to process the [order history csv](amazon_purchases.csv) to clean, transform and persist data into a MySQL database. The Airflow dag also uses the code stored in a [Jupyter Notebook](AmazonOrderHistoryAirflow_input.ipynb) to load data from MySQL, perform analysis and generate the visualizations below. The analysis and visualizations are stored in a completed [Jupyter Notebook](AmazonOrderHistoryAirflow_output.ipynb).
 
 # Table of Contents
 

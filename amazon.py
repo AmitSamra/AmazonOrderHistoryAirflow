@@ -11,7 +11,7 @@ from sqlalchemy.sql import text
 import numpy as np 
 import pandas as pd
 from dotenv import load_dotenv
-from airflow.operators.papermill_operator import PapermillOperator
+#from airflow.operators.papermill_operator import PapermillOperator
 import papermill as pm
 
 
@@ -150,5 +150,6 @@ t2 = PythonOperator(
 	provide_context = False,
 	dag = dag
 	)
+
 
 t1 >> t2

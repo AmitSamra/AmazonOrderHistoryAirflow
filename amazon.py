@@ -11,6 +11,8 @@ from sqlalchemy.sql import text
 import numpy as np 
 import pandas as pd
 from dotenv import load_dotenv
+from airflow.operators.papermill_operator import PapermillOperator
+import papermill as pm
 
 
 dotenv_local_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -82,7 +84,7 @@ def etl_csv():
 	df['OrderDayIndex'] = df['OrderDate'].dt.dayofweek
 	df['OrderDayName'] = df['OrderDate'].dt.day_name()
 
-	#df_main = df_main.drop(df_main[df_main['OrderYear'] == 2020].index)
+	# Drop rows where year = 2020
 	df = df.drop(df[df['OrderDate'].dt.year == 2020].index)
 
 	# Combine carriers to eliminate repitition
@@ -96,6 +98,22 @@ def etl_csv():
 	df['Carrier'] = df['Carrier'].replace('AMZN_US', 'AMZN')
 	mail = ['USPS', 'UPS', 'UPS Mail Innovations', 'FedEx', 'FedEx SmartPost', 'DHL', 'AMZN']
 	df.loc[~df.Carrier.isin(mail), 'Carrier'] = 'Other'
+
+	# Combine categories
+	df['Category'] = df['Category'].replace(['NOTEBOOK_COMPUTER','COMPUTER_DRIVE_OR_STORAGE','RAM_MEMORY','TABLET_COMPUTER','MONITOR','COMPUTER_COMPONENT', 'FLASH_MEMORY', 'SOFTWARE', 'INK_OR_TONER', 'COMPUTER_INPUT_DEVICE', 'CABLE_OR_ADAPTER', 'NETWORKING_DEVICE', 'KEYBOARDS', 'COMPUTER_ADD_ON', 'NETWORKING_ROUTER','MEMORY_READER','WIRELESS_ACCESSORY','SCANNER','PRINTER'],'COMPUTER')
+	df['Category'] = df['Category'].replace(['HEADPHONES','SPEAKERS','BATTERY','MULTIFUNCTION_DEVICE','ELECTRONIC_CABLE','SURVEILANCE_SYSTEMS','SECURITY_CAMERA','WATCH','CONSUMER_ELECTRONICS','CE_ACCESSORY','ELECTRONIC_ADAPTER','ELECTRIC_FAN','CAMCORDER','HANDHELD_OR_PDA','TUNER','AMAZON_BOOK_READER','CELLULAR_PHONE','POWER_SUPPLIES_OR_PROTECTION','CAMERA_OTHER_ACCESSORIES','CHARGING_ADAPTER'],'ELECTRONICS')
+	df['Category'] = df['Category'].replace(['HAIR_STYLING_AGENT','PERSONAL_CARE_APPLIANCE','PROFESSIONAL_HEALTHCARE','HEALTH_PERSONAL_CARE','SHAMPOO','VITAMIN','ABIS_DRUGSTORE','BEAUTY'],'HEALTH_BEAUTY')
+	df['Category'] = df['Category'].replace(['KITCHEN','SEEDS_AND_PLANTS','HOME_LIGHTING_ACCESSORY','BOTTLE','OUTDOOR_LIVING','ELECTRIC_FAN','TABLECLOTH','COFFEE_MAKER','HOME_BED_AND_BATH','HOME_LIGHTING_AND_LAMPS','SMALL_HOME_APPLIANCES'],'HOME')
+	df['Category'] = df['Category'].replace(['SHOES','PANTS','SHIRT','SHORTS','OUTERWEAR','SWEATSHIRT','HAT', 'SOCKSHOSIERY','UNDERWEAR','TECHNICAL_SPORT_SHOE'],'APPAREL')
+	df['Category'] = df['Category'].replace(['OUTDOOR_RECREATION_PRODUCT','SPORTING_GOODS'],'SPORTS_OUTDOOR')
+	df['Category'] = df['Category'].replace(['TEA','COFFEE'],'GROCERY')
+	df['Category'] = df['Category'].replace(['AUTO_PART','HARDWARE','AUTO_ACESSORY','PRECISION_MEASURING','BUILDING_MATERIAL','AUTO_ACCESSORY'],'TOOLS')
+	df['Category'] = df['Category'].replace(['WRITING_INSTRUMENT','PAPER_PRODUCT','BACKPACK','CARRYING_CASE_OR_BAG','CE_CARRYING_CASE_OR_BAG','OFFICE_PRODUCTS'],'OFFICE')
+	df['Category'] = df['Category'].replace(['ABIS_DVD','TOYS_AND_GAMES','ABIS_MUSIC','DOWNLOADABLE_VIDEO_GAME','ART_AND_CRAFT_SUPPLY'],'ENTERTAINMENT')
+	df['Category'] = df['Category'].replace(['ABIS_BOOK'],'BOOKS')
+	df['Category'] = df['Category'].replace(['ABIS_GIFT_CARD'],'GIFT_CARD')
+	df['Category'] = df['Category'].replace(['AV_FURNITURE','CELLULAR_PHONE_CASE','PHONE_ACCESSORY','PET_SUPPLIES','ACCESSORY','BAG','ACCESSORY_OR_PART_OR_SUPPLY'],'OTHER')
+	df['Category'] = df['Category'].replace(['','unknown'],'UNKNOWN')
 
 	# Reduce Sellers
 	df.loc[~df.Seller.isin(['Amazon.com']), 'Seller'] = 'ThirdParty'
@@ -118,4 +136,19 @@ t1 = PythonOperator(
 	dag = dag
 	)
 
-t1
+
+notebook_in_path = '/Users/amit/Coding/Projects/AmazonOrderHistoryAirflow/AmazonOrderHistoryAirflow_input.ipynb'
+notebook_out_path = '/Users/amit/Coding/Projects/AmazonOrderHistoryAirflow/AmazonOrderHistoryAirflow_output.ipynb'
+
+def run_notebook():
+	pm.execute_notebook(notebook_in_path,notebook_out_path)
+
+
+t2 = PythonOperator(
+	task_id = 'run_notebook',
+	python_callable = run_notebook,
+	provide_context = False,
+	dag = dag
+	)
+
+t1 >> t2

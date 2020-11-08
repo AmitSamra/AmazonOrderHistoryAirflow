@@ -11,13 +11,13 @@ from sqlalchemy.sql import text
 import numpy as np 
 import pandas as pd
 from dotenv import load_dotenv
-#from airflow.operators.papermill_operator import PapermillOperator
 import papermill as pm
-
 
 dotenv_local_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path=dotenv_local_path, verbose=True)
 
+# ----------------------------------------------------------------------------------------------------
+# Setup DAG
 
 default_args = {
 	'owner':'amit',
@@ -34,8 +34,10 @@ dag = DAG(
 	#schedule_interval = timedelta(hours=1),
 	catchup = False,
 	max_active_runs = 1,
-	)
+)
 
+# ----------------------------------------------------------------------------------------------------
+# Read input csv into pandas, peform ETL, export final dataframe to SQL database
 
 def etl_csv():
 
@@ -134,8 +136,10 @@ t1 = PythonOperator(
 	python_callable = etl_csv,
 	provide_context = False,
 	dag = dag
-	)
+)
 
+# ----------------------------------------------------------------------------------------------------
+# Run Jupyter Notebook locally
 
 notebook_in_path = '/Users/amit/Coding/Projects/AmazonOrderHistoryAirflow/AmazonOrderHistoryAirflow_input.ipynb'
 notebook_out_path = '/Users/amit/Coding/Projects/AmazonOrderHistoryAirflow/AmazonOrderHistoryAirflow_output.ipynb'
@@ -149,7 +153,9 @@ t2 = PythonOperator(
 	python_callable = run_notebook,
 	provide_context = False,
 	dag = dag
-	)
+)
 
+# ----------------------------------------------------------------------------------------------------
+# Dependencies
 
 t1 >> t2

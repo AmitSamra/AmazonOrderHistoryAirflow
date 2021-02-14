@@ -2,7 +2,8 @@ import airflow
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
-from datetime import timedelta, datetime
+from datetime import timedelta
+from datetime import datetime as dt
 import os
 import csv
 import sqlalchemy
@@ -21,8 +22,8 @@ load_dotenv(dotenv_path=dotenv_local_path, verbose=True)
 
 default_args = {
 	'owner':'amit',
-	#'start_date': datetime(2020,11,4,0),
-	'start_date': datetime.now(),
+	#'start_date': dt(2020,11,4,0),
+	'start_date': dt.now(),
 	'retries': 0,
 	'retry_delay': timedelta(minutes=1),
 }
